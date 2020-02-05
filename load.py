@@ -2,7 +2,7 @@
 EDMC Discord Rich Presence Plugin
 :author: 147loch
 :date: 05.02.2020
-:version: 2.1.5
+:version: 2.1.6
 """
 
 from os.path import dirname, join
@@ -24,7 +24,7 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.5'
+VERSION = '2.1.6'
 
 # Add global var for Planet name (landing + around)
 planet = '<Hidden>'
@@ -168,8 +168,8 @@ def plugin_prefs(parent, cmdr, is_beta):
     this.disablePresence = tk.IntVar(value=config.getint("disable_presence"))
     this.disable_auto_update = tk.IntVar(value=config.getint("edmcdrpc__disable_auto_update"))
     frame = nb.Frame(parent)
-    nb.Checkbutton(frame, text="Disable Presence", variable=this.disablePresence).grid(padx=10, pady=10)
-    nb.Checkbutton(frame, text="Disable Auto Updates", variable=this.disable_auto_update).grid(padx=10, pady=10)
+    nb.Checkbutton(frame, text="Disable Presence", variable=this.disablePresence).grid()
+    nb.Checkbutton(frame, text="Disable Auto Updates", variable=this.disable_auto_update).grid()
     nb.Label(frame, text='Version %s' % VERSION).grid(padx=10, pady=10, sticky=tk.W)
 
     this.Release.plugin_prefs(frame)
