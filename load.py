@@ -2,7 +2,7 @@
 EDMC Discord Rich Presence Plugin
 :author: 147loch
 :date: 06.02.2020
-:version: 2.1.10
+:version: 2.1.11
 """
 
 from os.path import dirname, join
@@ -24,7 +24,7 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.10'
+VERSION = '2.1.11'
 
 # Add global var for Planet name (landing + around)
 planet = '<Hidden>'
