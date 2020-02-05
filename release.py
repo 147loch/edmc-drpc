@@ -1,3 +1,4 @@
+import sys
 if sys.version_info[0] == 3:
     import tkinter as tk
 else:
@@ -51,7 +52,7 @@ class Release:
 
     def installer(self):
         tag_name = self.__latest.get('tag_name')
-        new_plugin_dir = os.path.join(os.path.dirname(Release.plugin_dir), "edmc-sagi-{}".format(tag_name))
+        new_plugin_dir = os.path.join(os.path.dirname(Release.plugin_dir), "edmc-drpc-{}".format(tag_name))
 
         if not os.path.isdir(new_plugin_dir):
             try:
