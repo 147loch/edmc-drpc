@@ -2,7 +2,7 @@
 EDMC Discord Rich Presence Plugin
 :author: 147loch
 :date: 05.02.2020
-:version: 2.1.1
+:version: 2.1.2
 """
 
 from os.path import dirname, join
@@ -24,7 +24,7 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.1'
+VERSION = '2.1.2'
 
 # Add global var for Planet name (landing + around)
 planet = '<Hidden>'
@@ -187,12 +187,14 @@ def prefs_changed(cmdr, is_beta):
 
 def plugin_start3(plugin_dir):
     update_presence()
+    release.Release.plugin_start(plugin_dir)
     this.Release = release.Release(VERSION)
     return 'DiscordPresence'
 
 
-def plugin_start():
+def plugin_start(plugin_dir):
     update_presence()
+    release.Release.plugin_start(plugin_dir)
     this.Release = release.Release(VERSION)
     return 'DiscordPresence'
 
