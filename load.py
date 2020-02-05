@@ -2,7 +2,7 @@
 EDMC Discord Rich Presence Plugin
 :author: 147loch
 :date: 06.02.2020
-:version: 2.1.14
+:version: 2.1.18
 """
 
 from os.path import dirname, join
@@ -24,7 +24,7 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.14'
+VERSION = '2.1.18'
 
 this = sys.modules[__name__]
 
@@ -32,14 +32,8 @@ this = sys.modules[__name__]
 planet = '<Hidden>'
 landingPad = '2'
 #
-# From discrod-rpc.h
+# From discord-rpc.h
 #
-discord_rpc_lib = 'discord-rpc.dll'
-if platform == 'darwin':
-    discord_rpc_lib = 'libdiscord-rpc.dylib'
-elif platform == 'linux' or platform == 'linux2':
-    discord_rpc_lib = 'libdiscord-rpc.so'
-this.discord_rpc = ctypes.cdll.LoadLibrary(join(dirname(__file__), discord_rpc_lib))
 
 
 class DiscordRichPresence(ctypes.Structure):
@@ -70,36 +64,49 @@ class DiscordJoinRequest(ctypes.Structure):
     ]
 
 
-ReadyProc = ctypes.CFUNCTYPE(None)
-DisconnectedProc = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)  # errorCode, message
-ErroredProc = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)  # errorCode, message
-JoinGameProc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)  # joinSecret
-SpectateGameProc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)  # spectateSecret
-JoinRequestProc = ctypes.CFUNCTYPE(None, ctypes.POINTER(DiscordJoinRequest))
+def init_discord_rpc():
+    discord_rpc_lib = 'discord-rpc.dll'
+    if platform == 'darwin':
+        discord_rpc_lib = 'libdiscord-rpc.dylib'
+    elif platform == 'linux' or platform == 'linux2':
+        discord_rpc_lib = 'libdiscord-rpc.so'
+    this.discord_rpc = ctypes.cdll.LoadLibrary(join(dirname(__file__), discord_rpc_lib))
 
+    this.ReadyProc = ctypes.CFUNCTYPE(None)
+    this.DisconnectedProc = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)  # errorCode, message
+    this.ErroredProc = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)  # errorCode, message
+    this.JoinGameProc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)  # joinSecret
+    this.SpectateGameProc = ctypes.CFUNCTYPE(None, ctypes.c_char_p)  # spectateSecret
+    this.JoinRequestProc = ctypes.CFUNCTYPE(None, ctypes.POINTER(DiscordJoinRequest))
 
-class DiscordEventHandlers(ctypes.Structure):
-    _fields_ = [
-        ('ready', ReadyProc),
-        ('disconnected', DisconnectedProc),
-        ('errored', ErroredProc),
-        ('joinGame', JoinGameProc),
-        ('spectateGame', SpectateGameProc),
-        ('joinRequest', JoinRequestProc)
-    ]
+    class DiscordEventHandlers(ctypes.Structure):
+        _fields_ = [
+            ('ready', this.ReadyProc),
+            ('disconnected', this.DisconnectedProc),
+            ('errored', this.ErroredProc),
+            ('joinGame', this.JoinGameProc),
+            ('spectateGame', this.SpectateGameProc),
+            ('joinRequest', this.JoinRequestProc)
+        ]
 
+    DISCORD_REPLY_NO, DISCORD_REPLY_YES, DISCORD_REPLY_IGNORE = list(range(3))
 
-DISCORD_REPLY_NO, DISCORD_REPLY_YES, DISCORD_REPLY_IGNORE = list(range(3))
+    this.Discord_Initialize = this.discord_rpc.Discord_Initialize
+    this.Discord_Initialize.argtypes = [ctypes.c_char_p, ctypes.POINTER(DiscordEventHandlers), ctypes.c_int,
+                                   ctypes.c_char_p]  # applicationId, handlers, autoRegister, optionalSteamId
+    this.Discord_Shutdown = this.discord_rpc.Discord_Shutdown
+    this.Discord_Shutdown.argtypes = None
+    this.Discord_UpdatePresence = this.discord_rpc.Discord_UpdatePresence
+    this.Discord_UpdatePresence.argtypes = [ctypes.POINTER(DiscordRichPresence)]
+    this.Discord_Respond = this.discord_rpc.Discord_Respond
+    this.Discord_Respond.argtypes = [ctypes.c_char_p, ctypes.c_int]  # userid, reply
 
-Discord_Initialize = this.discord_rpc.Discord_Initialize
-Discord_Initialize.argtypes = [ctypes.c_char_p, ctypes.POINTER(DiscordEventHandlers), ctypes.c_int,
-                               ctypes.c_char_p]  # applicationId, handlers, autoRegister, optionalSteamId
-Discord_Shutdown = this.discord_rpc.Discord_Shutdown
-Discord_Shutdown.argtypes = None
-Discord_UpdatePresence = this.discord_rpc.Discord_UpdatePresence
-Discord_UpdatePresence.argtypes = [ctypes.POINTER(DiscordRichPresence)]
-Discord_Respond = this.discord_rpc.Discord_Respond
-Discord_Respond.argtypes = [ctypes.c_char_p, ctypes.c_int]  # userid, reply
+    this.event_handlers = DiscordEventHandlers(this.ReadyProc(ready),
+                                               this.DisconnectedProc(disconnected),
+                                               this.ErroredProc(errored),
+                                               this.JoinGameProc(joinGame),
+                                               this.SpectateGameProc(spectateGame),
+                                               this.JoinRequestProc(joinRequest))
 
 
 #
@@ -131,15 +138,6 @@ def joinRequest(request):
     print('joinRequest', request.userId, request.username, request.avatar)
 
 
-event_handlers = DiscordEventHandlers(ReadyProc(ready),
-                                      DisconnectedProc(disconnected),
-                                      ErroredProc(errored),
-                                      JoinGameProc(joinGame),
-                                      SpectateGameProc(spectateGame),
-                                      JoinRequestProc(joinRequest))
-
-this = sys.modules[__name__]  # For holding module globals
-
 this.presence_state = _('Connecting CMDR Interface').encode()
 this.presence_details = b''
 this.time_start = time.time()
@@ -155,7 +153,7 @@ def update_presence():
     presence.largeImageText = "Elite Dangerous"
     presence.smallImageKey = "lch-logo"
     presence.smallImageText = "Made by 147loch"
-    Discord_UpdatePresence(presence)
+    this.Discord_UpdatePresence(presence)
 
 
 this.disablePresence = None
@@ -196,21 +194,19 @@ def plugin_start(plugin_dir):
     return 'dRPC'
 
 
-def plugin_app(parent):
-    this.Release = release.Release(VERSION, release_dll)
-    Discord_Initialize(CLIENT_ID, event_handlers, True, None)
+def init():
+    init_discord_rpc()
+    this.Discord_Initialize(CLIENT_ID, this.event_handlers, True, None)
     update_presence()
+
+
+def plugin_app(parent):
+    this.Release = release.Release(VERSION, init)
     return
 
 
-def release_dll():
-    handle = this.discord_rpc._handle
-    del this.discord_rpc
-    ctypes.cdll.FreeLibrary(handle)
-
-
 def plugin_stop():
-    Discord_Shutdown()
+    this.Discord_Shutdown()
 
 
 def journal_entry(cmdr, is_beta, system, station, entry, state):

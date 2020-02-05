@@ -16,12 +16,12 @@ class Release:
 
     plugin_dir = None
 
-    def __init__(self, version, release_rpc_lib):
+    def __init__(self, version, init):
         self.__version = version
         self.__disable_auto_updates = tk.IntVar(value=config.getint("edmcdrpc__disable_auto_update"))
         self.__plugin_prefs_text = None
         self.__latest = None
-        self.__release_rpc_lib = release_rpc_lib
+        self.__init = init
         self.release_pull()
         self.release_update()
         pass
@@ -43,6 +43,8 @@ class Release:
                     self.__plugin_prefs_text = "New version available: {}. Please update now.".format(
                         self.__latest.get('tag_name')
                     )
+            else:
+                self.__init()
 
     def plugin_prefs(self, frame):
         if self.__plugin_prefs_text is not None:
@@ -57,8 +59,6 @@ class Release:
         new_plugin_dir = os.path.join(os.path.dirname(Release.plugin_dir), "edmc-drpc-{}".format(tag_name))
 
         if not os.path.isdir(new_plugin_dir):
-            self.__release_rpc_lib()
-
             try:
                 download = requests.get("https://github.com/147loch/edmc-drpc/archive/{}.zip".format(tag_name),
                                         stream=True)
@@ -68,7 +68,7 @@ class Release:
                 self.__plugin_prefs_text = "Plugin update failed, please do it manually"
 
             try:
-                shutil.rmtree()
+                shutil.rmtree(Release.plugin_dir)
             except:
                 self.__plugin_prefs_text = "Could not delete the old version, deleting the new one"
                 shutil.rmtree(new_plugin_dir)
