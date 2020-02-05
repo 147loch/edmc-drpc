@@ -2,7 +2,7 @@
 EDMC Discord Rich Presence Plugin
 :author: 147loch
 :date: 06.02.2020
-:version: 2.1.11
+:version: 2.1.12
 """
 
 from os.path import dirname, join
@@ -24,7 +24,9 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.11'
+VERSION = '2.1.12'
+
+this = sys.modules[__name__]
 
 # Add global var for Planet name (landing + around)
 planet = '<Hidden>'
@@ -37,7 +39,7 @@ if platform == 'darwin':
     discord_rpc_lib = 'libdiscord-rpc.dylib'
 elif platform == 'linux' or platform == 'linux2':
     discord_rpc_lib = 'libdiscord-rpc.so'
-discord_rpc = ctypes.cdll.LoadLibrary(join(dirname(__file__), discord_rpc_lib))
+this.discord_rpc = ctypes.cdll.LoadLibrary(join(dirname(__file__), discord_rpc_lib))
 
 
 class DiscordRichPresence(ctypes.Structure):
@@ -89,14 +91,14 @@ class DiscordEventHandlers(ctypes.Structure):
 
 DISCORD_REPLY_NO, DISCORD_REPLY_YES, DISCORD_REPLY_IGNORE = list(range(3))
 
-Discord_Initialize = discord_rpc.Discord_Initialize
+Discord_Initialize = this.discord_rpc.Discord_Initialize
 Discord_Initialize.argtypes = [ctypes.c_char_p, ctypes.POINTER(DiscordEventHandlers), ctypes.c_int,
                                ctypes.c_char_p]  # applicationId, handlers, autoRegister, optionalSteamId
-Discord_Shutdown = discord_rpc.Discord_Shutdown
+Discord_Shutdown = this.discord_rpc.Discord_Shutdown
 Discord_Shutdown.argtypes = None
-Discord_UpdatePresence = discord_rpc.Discord_UpdatePresence
+Discord_UpdatePresence = this.discord_rpc.Discord_UpdatePresence
 Discord_UpdatePresence.argtypes = [ctypes.POINTER(DiscordRichPresence)]
-Discord_Respond = discord_rpc.Discord_Respond
+Discord_Respond = this.discord_rpc.Discord_Respond
 Discord_Respond.argtypes = [ctypes.c_char_p, ctypes.c_int]  # userid, reply
 
 
@@ -202,8 +204,8 @@ def plugin_app(parent):
 
 
 def release_dll():
-    handle = discord_rpc._handle
-    del discord_rpc
+    handle = this.discord_rpc._handle
+    del this.discord_rpc
     ctypes.cdll.FreeLibrary(handle)
 
 
