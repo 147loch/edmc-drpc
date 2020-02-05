@@ -9,6 +9,7 @@ import os
 import zipfile
 import StringIO
 import shutil
+import myNotebook as nb
 
 
 class Release:
