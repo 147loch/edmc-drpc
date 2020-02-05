@@ -1,8 +1,8 @@
 """
 EDMC Discord Rich Presence Plugin
 :author: 147loch
-:date: 05.02.2020
-:version: 2.1.8
+:date: 06.02.2020
+:version: 2.1.10
 """
 
 from os.path import dirname, join
@@ -24,7 +24,7 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.8'
+VERSION = '2.1.10'
 
 # Add global var for Planet name (landing + around)
 planet = '<Hidden>'
@@ -136,8 +136,6 @@ event_handlers = DiscordEventHandlers(ReadyProc(ready),
                                       SpectateGameProc(spectateGame),
                                       JoinRequestProc(joinRequest))
 
-Discord_Initialize(CLIENT_ID, event_handlers, True, None)
-
 this = sys.modules[__name__]  # For holding module globals
 
 this.presence_state = _('Connecting CMDR Interface').encode()
@@ -188,19 +186,25 @@ def prefs_changed(cmdr, is_beta):
 
 def plugin_start3(plugin_dir):
     release.Release.plugin_start(plugin_dir)
-    update_presence()
     return 'dRPC'
 
 
 def plugin_start(plugin_dir):
     release.Release.plugin_start(plugin_dir)
-    update_presence()
     return 'dRPC'
 
 
 def plugin_app(parent):
-    this.Release = release.Release(VERSION)
+    this.Release = release.Release(VERSION, release_dll)
+    Discord_Initialize(CLIENT_ID, event_handlers, True, None)
+    update_presence()
     return
+
+
+def release_dll():
+    handle = discord_rpc._handle
+    del discord_rpc
+    ctypes.cdll.FreeLibrary(handle)
 
 
 def plugin_stop():
