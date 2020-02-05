@@ -70,7 +70,8 @@ class Release:
                 self.__plugin_prefs_text = "Could not delete the old version, deleting the new one"
                 shutil.rmtree(new_plugin_dir)
 
-            self.__plugin_prefs_text = "Update installed, please restart the app now."
+            if self.__plugin_prefs_text is None:
+                self.__plugin_prefs_text = "Update installed, please restart the app now."
             Release.plugin_dir = new_plugin_dir
         else:
             self.__plugin_prefs_text = "Plugin update failed, please do it manually"

@@ -186,17 +186,20 @@ def prefs_changed(cmdr, is_beta):
 
 
 def plugin_start3(plugin_dir):
-    update_presence()
     release.Release.plugin_start(plugin_dir)
-    this.Release = release.Release(VERSION)
+    update_presence()
     return 'dRPC'
 
 
 def plugin_start(plugin_dir):
-    update_presence()
     release.Release.plugin_start(plugin_dir)
-    this.Release = release.Release(VERSION)
+    update_presence()
     return 'dRPC'
+
+
+def plugin_app(parent):
+    this.Release = release.Release(VERSION)
+    return
 
 
 def plugin_stop():
