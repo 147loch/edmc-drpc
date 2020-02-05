@@ -112,3 +112,9 @@ venv.bak/
 /config.py
 /myNotebook.py
 /l10n.py
+
+.idea
+
+!discord-rpc.dll
+!libdiscord-rpc.dylib
+!libdiscord-rpc.so

@@ -1,35 +1,30 @@
-#
-# KodeBlox Copyright 2019 Sayak Mukhopadhyay
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http: //www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+"""
+EDMC Discord Rich Presence Plugin
+:author: 147loch
+:date: 05.02.2020
+:version: 2.1.1
+"""
 
 from os.path import dirname, join
 from sys import platform
 import sys
 import time
 import ctypes
-import tkinter as tk
+if sys.version_info[0] == 3:
+    import tkinter as tk
+else:
+    import Tkinter as tk
 import myNotebook as nb
 from config import config
 import l10n
 import functools
+import release
 
 _ = functools.partial(l10n.Translations.translate, context=__file__)
 
-CLIENT_ID = b'386149818227097610'
+CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.0.3'
+VERSION = '2.1.1'
 
 # Add global var for Planet name (landing + around)
 planet = '<Hidden>'
@@ -156,6 +151,10 @@ def update_presence():
         presence.state = this.presence_state
         presence.details = this.presence_details
     presence.startTimestamp = int(this.time_start)
+    presence.largeImageKey = "ed-logo"
+    presence.largeImageText = "Elite Dangerous"
+    presence.smallImageKey = "lch-logo"
+    presence.smallImageText = "Made by 147loch"
     Discord_UpdatePresence(presence)
 
 
@@ -167,9 +166,13 @@ def plugin_prefs(parent, cmdr, is_beta):
     Return a TK Frame for adding to the EDMC settings dialog.
     """
     this.disablePresence = tk.IntVar(value=config.getint("disable_presence"))
+    this.disable_auto_update = tk.IntVar(value=config.getint("edmcdrpc__disable_auto_update"))
     frame = nb.Frame(parent)
-    nb.Checkbutton(frame, text="Disable Presence", variable=this.disablePresence).grid()
+    nb.Checkbutton(frame, text="Disable Presence", variable=this.disablePresence).grid(padx=10, pady=10)
+    nb.Checkbutton(frame, text="Disable Auto Updates", variable=this.disable_auto_update).grid(padx=10, pady=10)
     nb.Label(frame, text='Version %s' % VERSION).grid(padx=10, pady=10, sticky=tk.W)
+
+    this.Release.plugin_prefs(frame)
 
     return frame
 
@@ -184,11 +187,13 @@ def prefs_changed(cmdr, is_beta):
 
 def plugin_start3(plugin_dir):
     update_presence()
+    this.Release = release.Release(VERSION)
     return 'DiscordPresence'
 
 
 def plugin_start():
     update_presence()
+    this.Release = release.Release(VERSION)
     return 'DiscordPresence'
 
 
