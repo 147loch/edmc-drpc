@@ -147,10 +147,10 @@ def update_presence():
         presence.state = this.presence_state
         presence.details = this.presence_details
     presence.startTimestamp = int(this.time_start)
-    presence.largeImageKey = "ed-logo"
-    presence.largeImageText = "Elite Dangerous"
-    presence.smallImageKey = "lch-logo"
-    presence.smallImageText = "Made by 147loch"
+    presence.largeImageKey = "ed-logo".encode('utf-8')
+    presence.largeImageText = "Elite Dangerous".encode('utf-8')
+    presence.smallImageKey = "lch-logo".encode('utf-8')
+    presence.smallImageText = "Made by 147loch".encode('utf-8')
     this.Discord_UpdatePresence(presence)
 
 
