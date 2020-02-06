@@ -2,7 +2,7 @@
 EDMC Discord Rich Presence Plugin
 :author: 147loch
 :date: 06.02.2020
-:version: 2.1.18
+:version: 2.1.19
 """
 
 from os.path import dirname, join
@@ -24,7 +24,7 @@ _ = functools.partial(l10n.Translations.translate, context=__file__)
 
 CLIENT_ID = b'522871175420837901'
 
-VERSION = '2.1.18'
+VERSION = '2.1.19'
 
 this = sys.modules[__name__]
 
@@ -138,7 +138,7 @@ def joinRequest(request):
     print('joinRequest', request.userId, request.username, request.avatar)
 
 
-this.presence_state = _('Connecting CMDR Interface').encode()
+this.presence_state = _('Connecting CMDR Interface').encode('utf-8')
 this.presence_details = b''
 this.time_start = time.time()
 

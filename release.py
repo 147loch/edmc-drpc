@@ -43,6 +43,7 @@ class Release:
                     self.__plugin_prefs_text = "New version available: {}. Please update now.".format(
                         self.__latest.get('tag_name')
                     )
+                    self.__init()
             else:
                 self.__init()
 
