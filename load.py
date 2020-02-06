@@ -181,6 +181,7 @@ def prefs_changed(cmdr, is_beta):
     Save settings.
     """
     config.set('disable_presence', this.disablePresence.get())
+    config.set('edmcdrpc__disable_auto_update', this.disable_auto_update.get())
     update_presence()
 
 
